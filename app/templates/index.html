@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 12 Production AI Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --card-bg: rgba(18, 26, 44, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        main {
+            flex: 1;
+            max-width: 1000px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .config-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .chat-card {
+            flex: 1;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            height: 520px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 80%;
+            align-items: flex-start;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .msg.assistant .avatar {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .msg.user .avatar {
+            background: var(--accent-cyan);
+            color: white;
+        }
+
+        .bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 0.8rem 1.1rem;
+            border-radius: 14px;
+            font-size: 0.93rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .msg.user .bubble {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(6, 182, 212, 0.8));
+            border: none;
+            color: white;
+        }
+
+        .msg-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .chat-input-bar {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--card-border);
+            background: rgba(10, 15, 26, 0.6);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-send:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-send:active {
+            transform: translateY(0);
+        }
+
+        .chips {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-main);
+            background: rgba(139, 92, 246, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-box">
+            <div class="logo-icon">AI</div>
+            <div>
+                <h1 style="font-size: 1.1rem; font-weight: 700;">Production Agent Cluster</h1>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">K3 Day 12 — Stateless LLM Service</p>
+            </div>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <div id="liveness-badge" class="status-badge">
+                <div class="status-dot"></div>
+                <span id="health-text">Checking probes...</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="config-card">
+            <div class="input-group">
+                <label>X-API-Key Authorization</label>
+                <input type="password" id="api-key-input" placeholder="Nhập AGENT_API_KEY..." />
+            </div>
+            <div class="input-group">
+                <label>X-User-Id Session</label>
+                <input type="text" id="user-id-input" value="sv01" placeholder="Mã học viên / User ID..." />
+            </div>
+            <button class="btn-send" style="height: 38px; align-self: flex-end;" onclick="saveConfig()">Lưu
+                Config</button>
+        </div>
+
+        <div class="chat-card">
+            <div class="chat-messages" id="chat-messages">
+                <div class="msg assistant">
+                    <div class="avatar">AI</div>
+                    <div>
+                        <div class="bubble">Xin chào! Tôi là AI Agent Production đã được deploy thành công trên cụm
+                            container Cloud Railway. Bạn có thể hỏi bất kỳ câu hỏi nào.</div>
+                        <div class="msg-meta"><span>System Online</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding: 0 1.25rem;">
+                <div class="chips">
+                    <div class="chip" onclick="askQuick('Giải thích kiến trúc Stateless?')">💡 Giải thích Stateless
+                    </div>
+                    <div class="chip" onclick="askQuick('Kiểm tra kết nối Redis?')">🔴 Kiểm tra Redis</div>
+                    <div class="chip" onclick="askQuick('Deploy Docker là gì?')">🐳 Deploy Docker</div>
+                </div>
+            </div>
+
+            <div class="chat-input-bar">
+                <input type="text" id="prompt-input" placeholder="Nhập câu hỏi..."
+                    onkeydown="if(event.key==='Enter') sendQuestion()" />
+                <button class="btn-send" onclick="sendQuestion()">Gửi Request</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('api-key-input').value = localStorage.getItem('api_key') || '';
+        document.getElementById('user-id-input').value = localStorage.getItem('user_id') || 'sv01';
+
+        function saveConfig() {
+            localStorage.setItem('api_key', document.getElementById('api-key-input').value);
+            localStorage.setItem('user_id', document.getElementById('user-id-input').value);
+            alert('Đã lưu cấu hình API Key & User ID vào trình duyệt!');
+        }
+
+        async function checkProbes() {
+            try {
+                const resH = await fetch('/health');
+                const resR = await fetch('/ready');
+                const dataH = await resH.json();
+                const dataR = await resR.json();
+                if (resH.ok && resR.ok) {
+                    document.getElementById('health-text').innerText = `Liveness OK | Readiness (Redis OK)`;
+                } else {
+                    document.getElementById('health-text').innerText = `Probe Warning (Health: ${resH.status}, Ready: ${resR.status})`;
+                }
+            } catch (e) {
+                document.getElementById('health-text').innerText = `Disconnected`;
+            }
+        }
+        checkProbes();
+        setInterval(checkProbes, 10000);
+
+        function askQuick(text) {
+            document.getElementById('prompt-input').value = text;
+            sendQuestion();
+        }
+
+        async function sendQuestion() {
+            const input = document.getElementById('prompt-input');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            const userId = document.getElementById('user-id-input').value.trim() || 'sv01';
+
+            const container = document.getElementById('chat-messages');
+
+            // Add user msg
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg user';
+            userMsg.innerHTML = `<div class="avatar">U</div><div><div class="bubble">${question}</div></div>`;
+            container.appendChild(userMsg);
+
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // Pending assistant msg
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'msg assistant';
+            aiMsg.innerHTML = `<div class="avatar">AI</div><div><div class="bubble"><i>Đang xử lý request...</i></div></div>`;
+            container.appendChild(aiMsg);
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey,
+                        'X-User-Id': userId
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    aiMsg.querySelector('.bubble').innerText = data.answer;
+                    const meta = document.createElement('div');
+                    meta.className = 'msg-meta';
+                    meta.innerHTML = `<span>Hist: ${data.history_length}</span> <span>Cost: $${data.cost_usd.toFixed(6)}</span> <span>Tokens: ${data.tokens.in} in / ${data.tokens.out} out</span>`;
+                    aiMsg.querySelector('div').appendChild(meta);
+                } else {
+                    aiMsg.querySelector('.bubble').innerHTML = `<span style="color: var(--accent-red)">Lỗi ${response.status}: ${data.detail || JSON.stringify(data)}</span>`;
+                }
+            } catch (err) {
+                aiMsg.querySelector('.bubble').innerHTML = `<span style="color: var(--accent-red)">Lỗi kết nối server: ${err.message}</span>`;
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
