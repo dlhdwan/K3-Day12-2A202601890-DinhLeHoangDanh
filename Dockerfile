@@ -35,15 +35,14 @@ COPY app/ app/
 COPY utils/ utils/
 
 # Chạy dưới quyền user thường
-RUN useradd --create-home --uid 10001 appuser
+RUN adduser --disabled-password --no-create-home appuser
 USER appuser
 
 EXPOSE 8000
 
 # Health check dùng Python (image slim không có curl, đọc PORT động)
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD pytho  n -c "import os, urllib.request; port = os.getenv('PORT', '8000'); urllib.request.urlopen(f'http://127.0.0.1:{port}/health', timeout=3)"
+    CMD python -c "import os, urllib.request; port = os.getenv('PORT', '8000'); urllib.request.urlopen(f'http://127.0.0.1:{port}/health', timeout=3)"
 
 # Sử dụng shell form để expand biến $PORT khi chạy trên cloud
 CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
-RUN add
