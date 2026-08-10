@@ -25,9 +25,12 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run pytest
+        env:
+          AGENT_API_KEY: ${{ secrets.AGENT_API_KEY || 'ci-dummy-key' }}
+          REDIS_URL: redis://localhost:6379/0
         run: |
           pytest tests/ --ignore=tests/test_cp5.py -v
-
+          
       - name: Build Docker Image
         run: |
           docker build -t day12-agent:test .
