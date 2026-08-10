@@ -2,6 +2,8 @@
 
 ![CI](https://github.com/dlhdwan/K3-Day12-2A202601890-DinhLeHoangDanh/actions/workflows/ci.yml/badge.svg)
 
+🌐 **Live Public Deployment**: https://k3-day12-2a202601890-dinhlehoangdanh-production.up.railway.app
+
 Đưa một AI agent từ `localhost:8000` lên một địa chỉ công khai mà người khác
 gọi được, có bảo mật, có giới hạn chi phí, và không sập khi bạn deploy bản mới.
 
