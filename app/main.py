@@ -74,15 +74,15 @@ class AskRequest(BaseModel):
 # ─────────────────────────────────────────────────────────────
 # Health & readiness
 # ─────────────────────────────────────────────────────────────
-INDEX_HTML_PATH = Path(__file__).parent / "templates" / "index.html"
+INDEX_HTML_PATH = Path(__file__).resolve().parent / "templates" / "index.html"
 
 
 @app.get("/", response_class=HTMLResponse)
 def index():
     """Trang giao diện Web UI tương tác trực tiếp với Production Agent."""
     if INDEX_HTML_PATH.exists():
-        return INDEX_HTML_PATH.read_text(encoding="utf-8")
-    return "<h1>Day 12 Production Agent</h1>"
+        return HTMLResponse(content=INDEX_HTML_PATH.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Day 12 Production Agent</h1>")
 
 
 @app.get("/health")
